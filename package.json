@@ -29,3 +29,24 @@
   "author": "Gregor Martynus (https://twitter.com/gr2m)",
   "license": "MIT"
 }
+name: Create issue on commit
+
+on: [ push ]
+
+jobs:
+  create_issue:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Create issue using REST API
+        run: |
+          curl --request POST \
+          --url {% data variables.product.api_url_code %}/repos/${% raw %}{{ github.repository }}{% endraw %}/issues \
+          --header 'authorization: Bearer ${% raw %}{{ secrets.GITHUB_TOKEN }}{% endraw %}' \
+          --header 'content-type: application/json' \
+          --data '{
+            "title": "Automated issue for commit: ${% raw %}{{ github.sha }}{% endraw %}",
+            "body": "This issue was automatically created by the GitHub Action workflow **${% raw %}{{ github.workflow }}{% endraw %}**. \n\n The commit hash was: _${% raw %}{{ github.sha }}{% endraw %}_."
+            }' \
+          --fail
